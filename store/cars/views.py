@@ -10,7 +10,7 @@ class CarsView():
     @App.get("/{car}")
     def view(request, car: str):
         car = get_object_or_404(Cars, id=car)
-        return model_to_dict(car)
+        return model_to_dict(car )
 
     @App.get("/")
     def view_all(request):
@@ -33,10 +33,17 @@ class CarsView():
         car.save()
         return {"result": data}
 
-    @App.patch("/")
-    def update(request, car: str):
-        return {"result": 'updated'}
+    @App.put("/")
+    def update(request, car: str, data: CarSchema):
+        car = get_object_or_404(Cars, id=car)
+        for attr, value in data.dict().items():
+            setattr(car, attr, value)
+
+        car.save()
+        return model_to_dict(car)
 
     @App.delete("/")
     def delete(request, car: str):
+        car = get_object_or_404(Cars, id=car)
+        car.delete()
         return {'result': 'deleted'}
