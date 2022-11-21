@@ -1,32 +1,42 @@
 from ninja import NinjaAPI
+from django.shortcuts import get_object_or_404
+from django.forms.models import model_to_dict
 
+from .models import Cars
+from .schema import CarSchema
 class CarsView():
     App = NinjaAPI()
 
-    @App.get("/")
-    def view(request, car: int):
-        return {'result': 'car'}
+    @App.get("/{car}")
+    def view(request, car: str):
+        car = get_object_or_404(Cars, id=car)
+        return model_to_dict(car)
 
     @App.get("/")
-    def viewAll(request):
-        return {"result": 'cars'}
+    def view_all(request):
+        cars = Cars.objects.all().order_by('price')
+        carsSerialized =  [{'id': i.id, 'title': i.title, 'model': i.model, 'price': i.price, 'isPublic': i.isPublic} for i in cars]
+
+        return {"result": carsSerialized}
 
     @App.get('/me')
-    def viewMe(request, car: int):
+    def view_me(request):
         return {'result': 'show a my cars'}
 
     @App.get("/me/listing")
-    def ViewAllMe(request):
+    def View_all_me(request):
         return {'result': 'return all me'}
 
     @App.post("/")
-    def create(request):
-        return {"result": 'created'}
+    def create(request,  data: CarSchema):
+        car = Cars(**data.dict())
+        car.save()
+        return {"result": data}
 
     @App.patch("/")
-    def update(request, car: int):
+    def update(request, car: str):
         return {"result": 'updated'}
 
     @App.delete("/")
-    def delete(request, car: int):
+    def delete(request, car: str):
         return {'result': 'deleted'}
